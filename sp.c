@@ -15,7 +15,7 @@ static const char* const <filename>_c_Id = "$Id$";
 
 #include "sp.h"
 int daemonize = 0;
-char *pythonpath;
+char *pythonpath, *request_message;
 
 // -- fileScope -------------------------------------------------------------
 // main_loop()
@@ -32,7 +32,6 @@ main_loop(
     int listen_fd, connection_fd, msg_len;
     struct sockaddr_in addr, client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
-    char request_message[128];
     char message[strlen(request_message)];
 
     // Create socket to listen for connections from the sprinkler
@@ -88,7 +87,10 @@ main(
 
     // Parse command line options
     if ( parse_options(argc, argv) ) {
-        return 0;
+        exit(EXIT_FAILURE);
+    }
+    if ( read_shared_secret() ) {
+        exit(EXIT_FAILURE);
     }
 
     // Daemonize if required

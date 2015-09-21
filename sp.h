@@ -31,9 +31,11 @@ static const char* const <filename>_H_Id = "$Id$";
 // declarations
 int get_calendar_events(time_t *duration);
 int parse_options(int argc, char **argv);
+int read_shared_secret(void);
 void make_daemon(void (*f)());
 extern int daemonize;
 extern char *pythonpath;
+extern char *request_message;
 
 // inline functions
 

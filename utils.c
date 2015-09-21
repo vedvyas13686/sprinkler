@@ -28,7 +28,8 @@ int
 parse_options(
     int argc, char **argv)
 {
-    char c;
+    char c, print_help = 0;
+    pythonpath = NULL;
     while ( (c = getopt(argc, argv, "dhp:") ) != -1 ) {
         switch ( c ) {
             case 'd':
@@ -47,20 +48,36 @@ parse_options(
                 } else {
                     fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
                 }
-                return 1;
+                print_help = 1;
+                break;
              
             case 'h':
-                printf("sp [OPTIONS]\n");
-                printf("Sprinker controller program\n");
-                printf("   -d, daemonize the program\n");
-                printf("   -p, path of the python libraries\n");
-                printf("Report bugs to vedvyas13686@gmail.com\n");
+                print_help = 1;
+                break;
 
             default:
-                return 1;
+                print_help = 1;
         }
     }
-    return 0;
+    if ( pythonpath != NULL ) {
+        struct stat sb;
+        if ( stat(pythonpath, &sb) < 0 ) {
+            print_help = 1;
+        }
+        if ( (sb.st_mode & S_IFMT) != S_IFDIR ) {
+            print_help = 1;
+        }
+    } else {
+        print_help = 1;
+    }
+    if ( print_help ) {
+        printf("sp [OPTIONS]\n");
+        printf("Sprinker controller program\n");
+        printf("   -d, daemonize the program\n");
+        printf("   -p, (mandatory) path of the python libraries and config files\n");
+        printf("Report bugs to vedvyas13686@gmail.com\n");
+    }
+    return print_help;
 }
 // -- global -----------------------------------------------------------------
 // make_daemon()
@@ -108,9 +125,9 @@ make_daemon(
     }
         
     // Close out the standard file descriptors
-    //close(STDIN_FILENO);
-    //close(STDOUT_FILENO);
-    //close(STDERR_FILENO);
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 
     if ( setenv("PYTHONPATH", pythonpath, 1) ) {
         exit(EXIT_FAILURE);
@@ -120,4 +137,56 @@ make_daemon(
     work_fn();
 
     exit(EXIT_SUCCESS);
+}
+// -- global -----------------------------------------------------------------
+// read_shared_secret()
+//    read the shared secret of the attached sprinkler
+//
+// Returns:
+//     0, success
+//     1, failed
+// -------------------------------------------------------------------------*/
+int
+read_shared_secret(
+	void)
+{
+    FILE *fp;
+    char *file_name;
+    int sz;
+
+    // Build the file name to read
+    if ( (file_name = malloc(strlen(pythonpath)+strlen("/shared_secret.txt"))) == NULL ) {
+        return 1;
+    }
+    strcpy(file_name, pythonpath);
+    strcat(file_name, "/shared_secret.txt");
+    // Open the file
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+        free(file_name); 
+        return 1;
+    }
+    free(file_name); 
+    // Find the size of the file
+    if ( fseek(fp, 0L, SEEK_END) < 0 ) {
+        fclose(fp);
+        return 1;
+    }
+    // Determine the number of bytes in the file
+    if ( (sz = ftell(fp)) < 0 ) {
+        fclose(fp);
+        return 1;
+    }
+    // Allocate memory for the request message string
+    if ( (request_message = malloc(sz)) == NULL ) {
+        fclose(fp);
+        return 1;
+    }
+    // Rewind and read the string from file into the buffer
+    rewind(fp);
+    if ( fread(request_message, 1, sz, fp) != sz ) {
+        fclose(fp);
+        return 1;
+    }
+    fclose(fp);
+    return 0;
 }
