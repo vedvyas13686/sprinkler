@@ -12,7 +12,7 @@ CFLAGS = -Wall
 DEBUG_CFLAGS = -Wall -g
 INCLUDES = -I/usr/include/python2.7/
 LFLAGS =
-LIBS = -lpython2.7
+LIBS = -lpython2.7 
 SRCS = sp.c gcal.c utils.c
 OBJS = $(SRCS:.c=.o)
 MAIN = sp
@@ -32,7 +32,7 @@ $(MAIN):$(OBJS)
 	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 
 clean:
-	$(RM) *.o *~ $(MAIN)
+	$(RM) *.o *.pyc *~ $(MAIN)
 
 depend: $(SRCS)
 	makedepend $(INCLUDES) $^
