@@ -60,10 +60,12 @@ parse_options(
         }
     }
     if ( pythonpath != NULL ) {
+        // Get file status
         struct stat sb;
         if ( stat(pythonpath, &sb) < 0 ) {
             print_help = 1;
         }
+        // Check if it is a directory
         if ( (sb.st_mode & S_IFMT) != S_IFDIR ) {
             print_help = 1;
         }
