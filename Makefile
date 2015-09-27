@@ -13,7 +13,7 @@ DEBUG_CFLAGS = -Wall -g
 INCLUDES = -I/usr/include/python2.7/
 LFLAGS =
 LIBS = -lpython2.7 
-SRCS = sp.c gcal.c utils.c
+SRCS = sp.c gcal.c utils.c speck.c
 OBJS = $(SRCS:.c=.o)
 MAIN = sp
 

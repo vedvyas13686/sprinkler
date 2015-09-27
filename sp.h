@@ -25,6 +25,7 @@ static const char* const <filename>_H_Id = "$Id$";
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <stdint.h>
 
 #define SPRINKLER_SERVER_PORT 0x4912
 
@@ -33,9 +34,14 @@ int get_calendar_events(time_t *duration);
 int parse_options(int argc, char **argv);
 int read_shared_secret(void);
 void make_daemon(void (*f)());
+void speck_key_expand_128x128(uint64_t *key);
+void encrypt_speck_128x128(uint64_t *plain_text, uint64_t *cipher_text, uint64_t *key);
+void decrypt_speck_128x128(uint64_t *cipher_text, uint64_t *plain_text, uint64_t *key);
+
 extern int daemonize;
 extern char *pythonpath;
 extern char *request_message;
+
 
 // inline functions
 
