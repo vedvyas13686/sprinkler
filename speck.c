@@ -13,7 +13,9 @@
 static const char* const <filename>_c_Id = "$Id$";
 #endif
 
-#include "sp.h"
+//#include "sp.h"
+#include <stdio.h>
+#include <stdint.h>
 
 #define ROR(x, r) ( ((x) >> (r)) | ((x) << (64 - (r))) )
 #define ROL(x, r) ( ((x) << (r)) | ((x) >> (64 - (r))) )
@@ -84,26 +86,28 @@ void decrypt_speck_128x128(
     }
     return;
 }
-/* -- uncomment to test standalone 
+// -- uncomment to test standalone 
+/*
 int main()
 {
     uint64_t plain_text[2] = { 0x6c61766975716520, 0x7469206564616d20 };
-    uint64_t cipher_text[2] = { 0, 0 };
+    //uint64_t cipher_text[2] = { 0, 0 };
+    uint64_t *cipher_text = plain_text;
     uint64_t key[32] = { 0 };
     key[0] = 0x0f0e0d0c0b0a0908;
     key[1] = 0x0706050403020100;
 
     speck_key_expand_128x128(key);
     encrypt_speck_128x128(plain_text, cipher_text, key);
-    printf("plain : %08llx %08llx\ncipher: %08llx %08llx\n", 
+    printf("plain : %08lx %08lx\ncipher: %08lx %08lx\n", 
             plain_text[0], plain_text[1], cipher_text[0], cipher_text[1]);
     if ( cipher_text[0] != 0xa65d985179783265 && cipher_text[1] != 0x7860fedf5c570d18 ) {
         printf("Error encrypting test vectors\n");
     }
-    plain_text[0] = 0;
-    plain_text[1] = 0;
+ //   plain_text[0] = 0;
+  //  plain_text[1] = 0;
     decrypt_speck_128x128(cipher_text, plain_text, key);
-    printf("plain : %08llx %08llx\ncipher: %08llx %08llx\n", 
+    printf("plain : %08lx %08lx\ncipher: %08lx %08lx\n", 
             plain_text[0], plain_text[1], cipher_text[0], cipher_text[1]);
     if ( plain_text[0] != 0x6c61766975716520 && plain_text[1] != 0x7469206564616d20 ) {
         printf("Error decrypting test vectors\n");
