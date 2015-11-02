@@ -29,7 +29,7 @@ void
 main_loop(
     void)
 {
-    int listen_fd, connection_fd, msg_len;
+    int listen_fd, connection_fd, msg_len, on;
     struct sockaddr_in addr, client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
     char message[strlen(request_message)];
@@ -39,11 +39,18 @@ main_loop(
         exit(EXIT_FAILURE);
     }
 
+    // Enable address reuse 
+    on = 1;
+    if ( setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0 ) {
+        exit(EXIT_FAILURE);
+    }
+
     // Create server side address
     bzero(&addr, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr=htonl(INADDR_ANY);
-    addr.sin_port=htons(SPRINKLER_SERVER_PORT);
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = htons(SPRINKLER_SERVER_PORT);
+
 
     // Bind address to socket and start listening for connections
     if ( bind(listen_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0 ) {
@@ -62,6 +69,32 @@ main_loop(
             close(connection_fd);
             continue;
         }
+        if ( (msg_len = read(connection_fd, message, strlen(request_message))) < 0 ) {
+            close(connection_fd);
+            continue;
+        }
+        if ( msg_len == strlen(request_message) ) {
+/*
+            id = ntohl(*((uint32_t *)message));
+            request = (uint64_t *)(message + sizeof(uint64_t));
+
+            get_cipher_key_from_database(id, key);
+            speck_key_expand_128x128(key);
+            for ( i = 0; i < strlen(request_message)/16; i++ ) {
+                decrypt(request, request, key);
+            }
+            if ( strcmp(message, "schedule_request") == 0 ) {
+            }
+*/
+        } 
+
+
+        bzero(message, strlen(request_message));
+        if ( (connection_fd = accept(listen_fd, (struct sockaddr *)&client_addr, &client_addr_len)) < 0 ) {
+            close(connection_fd);
+            continue;
+        }
+    
         if ( (msg_len = read(connection_fd, message, strlen(request_message))) < 0 ) {
             close(connection_fd);
             continue;
